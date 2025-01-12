@@ -22,6 +22,7 @@ from attn_gym.masks import (
     generate_sliding_window,
     generate_prefix_lm_mask,
     generate_doc_mask_mod,
+    generate_speculative_streaming_mask_mod,
 )
 from attn_gym.mods import generate_alibi_bias, generate_tanh_softcap
 
@@ -222,6 +223,7 @@ def main(examples: List[str] = ["all"]):
         "softcap_approx": lambda: test_mask(
             score_mod=generate_tanh_softcap(30, approx=True), skip_correctness=True
         ),
+        "speculative_streaming": lambda: test_mask(mask_mod=generate_speculative_streaming_mask_mod(2048, is_lossless=False), S=8192),
     }
 
     if "all" in examples:
