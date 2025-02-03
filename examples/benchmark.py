@@ -22,6 +22,7 @@ from attn_gym.masks import (
     generate_sliding_window,
     generate_prefix_lm_mask,
     generate_doc_mask_mod,
+    generate_speculative_streaming_mask_mod,
 )
 from attn_gym.mods import generate_alibi_bias, generate_tanh_softcap
 
@@ -227,6 +228,20 @@ def main(examples: List[str] = ["all"]):
     Args:
         examples: List of examples to run. If "all" is specified, all examples will be run.
     """
+    available_examples = {
+        "causal": lambda: test_mask(mask_mod=causal_mask),
+        "alibi": lambda: test_mask(score_mod=generate_alibi_bias(16), skip_correctness=True),
+        "sliding_window": lambda: test_mask(mask_mod=generate_sliding_window(window_size=1024)),
+        "prefix_lm": lambda: test_mask(mask_mod=generate_prefix_lm_mask(prefix_length=1024)),
+        "document": lambda: run_document_masking(max_seq_len=32768, num_docs=12),
+        "softcap": lambda: test_mask(
+            score_mod=generate_tanh_softcap(30, approx=False), skip_correctness=True
+        ),
+        "softcap_approx": lambda: test_mask(
+            score_mod=generate_tanh_softcap(30, approx=True), skip_correctness=True
+        ),
+        "speculative_streaming": lambda: test_mask(mask_mod=generate_speculative_streaming_mask_mod(2048, is_lossless=False), S=8192),
+    }
 
     if "all" in examples:
         ex_to_run = list(AVAILABLE_EXAMPLES.keys())
